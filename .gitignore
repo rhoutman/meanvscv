@@ -4,5 +4,6 @@
 .Ruserdata
 packrat/lib*/
 packrat/src
-operator.json
+
 workspace.R
+.Rprofile
