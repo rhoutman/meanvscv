@@ -1,7 +1,7 @@
 {
   "name": "meanvscv",
   "description": "calculate and plot mean vs CV",
-  "tags": ["simple statistics"],
+  "tags": ["assay QC"],
   "authors": ["Rene Houtman"],
   "urls": ["https://github.com/rhoutman/meanvscv"],
   "properties": []
