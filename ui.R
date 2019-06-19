@@ -12,7 +12,9 @@ shinyUI(fluidPage(
   sidebarLayout(
     sidebarPanel(
 uiOutput("colorlist"),
-actionButton("runBtn", "save plot", disabled=TRUE)
+uiOutput("colfactselect")
+# 
+# actionButton("runBtn", "save plot", disabled=TRUE)
     ),
     
     # Show a plot of the generated distribution

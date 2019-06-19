@@ -2,6 +2,9 @@ options("tercen.serviceUri"="http://tercen:5400/api/v1/")
 options("tercen.username"="admin")
 options("tercen.password"="admin")
 
+options("tercen.workflowId" = "d30382066b71e6e7995cee981c001603")
+options("tercen.stepId" = "57-7")
+
 library(shiny)
 library(shinyjs)
 library(tercen)
@@ -10,8 +13,46 @@ library(plotly)
 
 shinyServer(function(input, output, session) {
 
-ctxcore <- reactive(getValues(session)) 
+ctx <- reactive(getCtx(session))
+   
+colfact <- reactive(ctx()$colors %>% as.character())  
+
+output$colfactselect <- renderUI({
+  choicelabels  <- gsub(pattern="[a-zA-Z]*\\.", replacement="", x= colfact())
   
+ thechoices <- colfact() %>% as.list() %>% setNames(choicelabels) 
+ 
+  pickerInput("selectedcolfact","Select color factor", as.list(thechoices), options = list(`actions-box` = TRUE),selected= as.list(thechoices), multiple = T)
+  
+})
+
+output$colorlist <- renderUI({
+  thechoices <-  ctxcore() %>% pull(color) %>% unique()
+  pickerInput("selectcolor","Select data", as.list(thechoices), options = list(`actions-box` = TRUE),selected= as.list(thechoices), multiple = T)
+})
+
+ctxcore <- reactive({
+df <-   getValues(session)
+
+# Create combined color factor    
+colfactselect <- input$selectedcolfact
+
+  if (colfactselect  %>% length() > 0) {
+    df <- df %>%
+      unite("color", colfactselect, remove = T)
+  } else {
+    df$color <- "all"
+  }
+  
+# filter  REQUIRED data
+  df %>%
+    group_by(.ci, .ri, color) %>%
+    summarize(
+      mean = mean(.y),
+      cv = 100 * sd(.y) / mean
+    )
+}) 
+
 output$meanvscvplot <- renderPlotly({
 
 ctxcore <- ctxcore() %>%
@@ -62,12 +103,6 @@ colnum <- ctxcore %>% pull(color) %>% unique() %>% length()
 
   })
 
-  output$colorlist <- renderUI({
-    thechoices <-  ctxcore() %>% pull(color) %>% unique()
-    pickerInput("selectcolor","Select data", as.list(thechoices), options = list(`actions-box` = TRUE),selected= as.list(thechoices), multiple = T)
-  })
-
-
   
 })
 
@@ -86,32 +121,22 @@ getCtx = function(session){
 
 getValues = function(session){
 
-  ctx = getCtx(session)
+ctx = getCtx(session)
 
-  # extract the data
+colorfact <- ctx$colors %>% as.character()
+labelfact <- ctx$labels %>% as.character()
+
+basicselect <- c(".ci",".ri", ".y")
+
+if(colorfact %>% length() >0) basicselect <- c(basicselect, colorfact)
+if(labelfact %>% length() >0) basicselect <- c(basicselect, labelfact)
+
+basicselect <- basicselect %>% unique()
+
+# extract the data
   ctxcore <- ctx$select(
-      c(".ci",".ri", ".y", ctx$colors) %>% 
-             unlist()
+    basicselect
       )
-  
-  colfac <- ctx$colors %>% length()
-  if (colfac > 0) {
-    acolor <- ctx$colors %>% as.character()
-    ctxcore <- ctxcore %>%
-      unite("color", acolor, remove = T)
-  } else {
-    ctxcore$color <- "all"
-  }
-  
-  
-  
-  # filter for needed data
-  ctxcore <- ctxcore %>%
-    group_by(.ci, .ri, color) %>%
-    summarize(
-      mean = mean(.y),
-      cv = 100 * sd(.y) / mean
-    )
 
   return(ctxcore)
 }
