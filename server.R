@@ -1,6 +1,6 @@
-options("tercen.serviceUri"="http://tercen:5400/api/v1/")
-options("tercen.username"="admin")
-options("tercen.password"="admin")
+# options("tercen.serviceUri"="http://tercen:5400/api/v1/")
+# options("tercen.username"="admin")
+# options("tercen.password"="admin")
 
 library(shiny)
 library(shinyjs)
