@@ -1,5 +1,10 @@
 ```R 
-packrat::init(options = list(use.cache = TRUE)) 
+if (!requireNamespace("remotes"))
+  install.packages("remotes")
+
+remotes::install_github("rstudio/renv")
+
+renv::init()
 
 git config --global user.email "rene_houtman@hotmail.com"
 git config --global user.name "Rene Houtman"
